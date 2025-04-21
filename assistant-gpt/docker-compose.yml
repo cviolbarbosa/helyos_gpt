@@ -1,0 +1,44 @@
+
+version: '3.9'
+
+services:
+  assistant-gpt:
+    build: .
+    container_name: assistant-gpt
+    environment:
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB_NAME: helyosQuestline
+      RBMQ_HOST: local_message_broker  
+      UUID: gpt-assistant
+      AGENT_PASS: secret_password
+      YARD_UID: EM01
+    depends_on:
+      - mongo
+    volumes:
+      - .:/app
+
+    networks:
+      - control-tower-net
+    restart: unless-stopped
+
+
+
+
+  mongo:
+    image: mongo:6.0
+    container_name: helyos-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - control-tower-net
+
+
+
+volumes:
+  mongo-data:
+
+networks:
+  control-tower-net:
+      external: true
