@@ -9,7 +9,6 @@ class MISSION_STATUS(str, Enum):
     EXECUTING = 'executing'
     
 
-
 class MANAGED_STATUS(str, Enum):
     UNCHECKED = 'unchecked'
     CHECKED = 'checked'

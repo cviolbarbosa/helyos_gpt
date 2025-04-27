@@ -3,7 +3,7 @@ version: '3.9'
 
 services:
   assistant-gpt:
-    build: .
+    build: ./assistant-gpt-agent
     container_name: assistant-gpt
     environment:
       MONGO_URI: mongodb://mongo:27017
@@ -15,12 +15,11 @@ services:
     depends_on:
       - mongo
     volumes:
-      - .:/app
+      - ./assistant-gpt-agent:/app
 
     networks:
       - control-tower-net
     restart: unless-stopped
-
 
 
 
@@ -34,6 +33,25 @@ services:
     networks:
       - control-tower-net
 
+
+
+  gpt-proxy-service:
+      build: 
+          context: ./gpt-proxy-microservice
+          dockerfile: Dockerfile
+      container_name: gpt-proxy-service
+      ports:
+        - "9333:9333"
+      restart: always
+
+      environment:
+        OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+      networks:
+        - control-tower-net
+
+      volumes:
+        - ./gpt-proxy-microservice/:/app
 
 
 volumes:
