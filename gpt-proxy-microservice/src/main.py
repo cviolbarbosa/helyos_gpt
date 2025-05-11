@@ -4,8 +4,11 @@ import time
 from preprocess_helyos_context import pre_process_map_objects, get_neareset_trailer 
 from openai import OpenAI
 import json
+import os
 
-
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", None)
+if not OPENAI_API_KEY:
+    raise ValueError("OPENAI_API_KEY environment variable is not set.")
 app = Flask(__name__)
 
 
@@ -23,7 +26,7 @@ def health():
     )  
 
 # Initialize OpenAI client
-client = OpenAI(api_key="your-api-key")
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 
 def call_gpt_model(question_to_GPT, max_retries=3, retry_delay=2):
@@ -37,29 +40,30 @@ def call_gpt_model(question_to_GPT, max_retries=3, retry_delay=2):
         {"role": "user", "content": f"Operation: {operation}\nYard state: {yard_global_state}\nPrompt: {user_prompt}"}
     ]
 
+    print(messages[1], flush=True)
     for attempt in range(max_retries):
         try:
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="o4-mini-2025-04-16",
                 messages=messages,
-                temperature=0.2,
-                max_tokens=1500,
+                temperature=1,
                 n=1
             )
 
             reply_content = response.choices[0].message.content.strip()
 
             # Attempt to parse the reply
+            print(f"GPT reply: {reply_content}", flush=True)
             parsed_response = json.loads(reply_content)
             parsed_response['prompt'] = user_prompt
             return parsed_response
 
         except json.JSONDecodeError as json_err:
-            print(f"[Attempt {attempt+1}] Invalid JSON from GPT. Retrying... Error: {json_err}")
+            print(f"[Attempt {attempt+1}] Invalid JSON from GPT. Retrying... Error: {json_err}", flush=True)
             time.sleep(retry_delay)
 
         except Exception as e:
-            print(f"[Attempt {attempt+1}] Error calling GPT model: {e}")
+            print(f"[Attempt {attempt+1}] Error calling GPT model: {e}", flush=True)
             time.sleep(retry_delay)
 
     # After max retries, fail gracefully
@@ -81,6 +85,7 @@ def main():
     request_data = request_body['request']
     context = request_body['context']
     config = request_body.get('config', {})
+    if config is None: config = {}
     step = context['orchestration']['current_step']
 
     # GPT-specific input data
@@ -91,7 +96,7 @@ def main():
 
     # Filter relevant data from helyos context
     helyos_agents = context['agents']
-    helyos_agents = [ {  'uuid': agent['uuid'],
+    agents = [ {  'uuid': agent['uuid'],
                          'name': agent['name'],
                          'x': agent['x'],
                          'y': agent['y'],
@@ -103,8 +108,8 @@ def main():
                          'follower_connections': agent['follower_connections']
                          } for agent in helyos_agents]
 
-    trucks = [agent for agent in helyos_agents if agent['agent_type'] == 'truck']
-    trailers = [agent for agent in helyos_agents if agent['agent_type'] == 'trailer']
+    trucks = [agent for agent in agents if agent['agent_type'] == 'truck']
+    trailers = [agent for agent in agents if agent['agent_type'] == 'trailer']
 
     map_objects = context['map'].get('map_objects', [])
     targets =  pre_process_map_objects(map_objects, trucks, trailers)
@@ -131,8 +136,8 @@ def main():
         }         
 
         #Call the GPT model to get the quest
-        response = call_gpt_model(question_to_GPT) # This function should be implemented to call the GPT model
-        
+        response = call_gpt_model(question_to_GPT) 
+
         quest_operation = response['operation']
         questline_id = response.get('questline_id', None)
         mission_requests = response.get('mission_requests', [])
@@ -165,6 +170,6 @@ def main():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=9200, debug=True)
+    app.run(host='0.0.0.0', port=9333, debug=True)
 
 

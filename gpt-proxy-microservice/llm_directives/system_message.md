@@ -87,6 +87,7 @@ Important Rules:
 - If the operation is 'update_quest' or 'failing_quest', questline_id must be provided.
 - mission_requests must be a list, even if it has only one element.
 - Output must be parsable with JSON.parse().
+- You can supply extra information to the use employing the field user_response
 
 ## Basic logics
 - A trailer cannot move by itself, it needs a truck to carry it.
