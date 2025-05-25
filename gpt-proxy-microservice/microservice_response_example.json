@@ -1,0 +1,73 @@
+{
+    "results": [
+        {
+            "agent_uuid": "gpt-assistant",
+            "assignment": {
+                "missions": [
+                    {
+                        "data": {
+                            "x": -18253.21,
+                            "y": 31887.9,
+                            "anchor": "front",
+                            "tool_id": 1,
+                            "agent_id": 1,
+                            "_settings": {},
+                            "schedEndAt": "front",
+                            "orientations": [
+                                0
+                            ],
+                            "schedStartAt": "2025-03-16T11:29:10.162Z"
+                        },
+                        "order": 1,
+                        "agent_uuids": [
+                            "Ab34069fc5-fdgs-434b-b87e-f19c5435113"
+                        ],
+                        "work_process_type_name": "driving"
+                    },
+                    {
+                        "data": {
+                            "x": -48253.21,
+                            "y": 41887.9,
+                            "anchor": "front",
+                            "tool_id": 1,
+                            "agent_id": 1,
+                            "_settings": {},
+                            "schedEndAt": "front",
+                            "orientations": [
+                                0
+                            ],
+                            "schedStartAt": "2025-03-16T11:29:10.162Z"
+                        },
+                        "order": 2,
+                        "agent_uuids": [
+                            "Ab34069fc5-fdgs-434b-b87e-f19c5435113"
+                        ],
+                        "work_process_type_name": "driving"
+                    },
+                    {
+                        "data": {
+                            "x": 1432.032746495679,
+                            "y": 20291.806767694652,
+                            "anchor": "front",
+                            "tool_id": 2,
+                            "agent_id": 2,
+                            "_settings": {},
+                            "schedEndAt": "front",
+                            "orientation": 0.329,
+                            "orientations": [
+                                0.329
+                            ],
+                            "schedStartAt": "2025-04-19T13:37:52.726Z"
+                        },
+                        "order": 2,
+                        "agent_uuids": [
+                            "Bb34069fc5-fdgs-434b-b87e-f19c5435113"
+                        ],
+                        "work_process_type_name": "driving"
+                    }
+                ]
+            }
+        }
+    ],
+    "_settings": {}
+}
