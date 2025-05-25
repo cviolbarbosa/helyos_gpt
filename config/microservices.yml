@@ -1,0 +1,108 @@
+version: '2.0'
+
+services:
+
+    gpt-proxy:
+      type: AI
+      url: http://gpt-proxy-service:9333/plan_job/
+      apikey: null
+      domain: Assignment planner
+      is_dummy: false
+      enable: true
+      timeout: 180
+      config: 'null'
+      context:
+        map_data: true
+        mission_agents_data: true
+        all_agents_data: true
+        require_map_objects:
+          - __all__
+      description: ''
+
+
+    trucktrix:
+      is_dummy: false
+      domain: "Assignment planner"  # Assignment planner | Map Server | Storage server
+      type: "drive"
+      url: https://trucktrix.ivi.fraunhofer.de/trucktrix-path-api/plan_job/
+      enable: false
+      apikey: "copy-here-the-API-key"
+      timeout: 300
+      
+      context:
+        map_data: true
+        all_agents_data: true
+        mission_agents_data: true
+        
+      config: >
+            {"trucktrix_planner_type": "all_directions",
+              "output_format" :"trucktrix-ivi"}
+
+
+
+    clothoid_path:
+      domain: "Assignment planner"  # Assignment planner | Map server | Storage server
+      type: "drive"
+      url:     "http://local_planner_service:9000/plan_job/"
+      enable: true
+      apikey: "super_secret"
+      timeout: 180
+
+      context:
+        map_data: false
+        all_agents_data: false
+        mission_agents_data: true
+        
+      config: >
+            { "output_format" :"trucktrix-ivi"}
+
+
+
+    trailer_transport:
+      domain: "Assignment planner"  # Assignment planner | Map server | Storage server
+      type: "transport"
+      url:     "http://trailer_transport_service:9100/plan_job/"
+      enable: true
+      apikey: "super_secret"
+      timeout: 180
+
+      context:
+        map_data: false
+        all_agents_data: true
+        mission_agents_data: true
+        
+      config: >
+            { "output_format" :"trucktrix-ivi", 
+              "path_planner_url": "http://local_planner_service:9000/plan_job/",
+              "path_planner_apikey":"super_secret"}
+
+
+    pick_drop_park_service:
+      domain: "Assignment planner"  # Assignment planner | Map server | Storage server
+      type: "pick_drop_park"  
+      url:     "http://pick_drop_park_service:9200/plan_job/"
+      enable: true
+      apikey: "super_secret"
+      timeout: 180
+
+      context:
+        map_data: true
+        all_agents_data: true
+        mission_agents_data: true
+
+
+    map_service:
+      domain: "Map server"  # Assignment planner | Map server | Storage server
+      type: "target_postitions"
+      url:     "http://map_service:9300/map/"
+      enable: true
+      apikey: "super_secret"
+      timeout: 180
+
+      context:
+        map_data: false
+        all_agents_data: false
+        mission_agents_data: false
+        
+      config: >
+            {}

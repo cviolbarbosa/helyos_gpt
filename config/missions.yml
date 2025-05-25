@@ -1,0 +1,257 @@
+version: '2.0'
+
+missions:
+
+    gptmission:
+      description: null
+      maxagents: 100
+      settings: '{}'
+      extra_params: null
+      recipe:
+        steps:
+
+          - step: A
+            request_order: 1
+            agent: null
+            service_type: AI
+            wait_assignments: true
+            apply_result: true
+            service_config: null
+
+    driving:
+      maxagents: 1
+      description: "drive from a to b"
+      settings: >
+            {}
+      
+      recipe:
+        steps:
+          - step: "A"
+            service_type: "drive"
+            request_order: 1
+            apply_result: true
+            override_config: "{}"
+
+
+    map_loading:
+      description: yard map
+      maxagents: 1
+      recipe:
+        steps:
+          - step: A
+            request_order: 1
+            service_type: target_postitions
+            dependencies: '[]'
+            apply_result: true
+            override_config: '{}'
+
+
+    park_to_target:
+      maxagents: 2
+      description: "drive to pick up or drop a trailer"
+      settings: >
+            {}
+        
+      recipe:
+          steps:
+            - step: "prepare_mission"
+              service_type: "pick_drop_park"
+              request_order: 1
+              apply_result: false
+              override_config: "{}"
+
+            - step: "drive_the_path"
+              service_type: "drive"
+              request_order: 2
+              dependencies: '["prepare_mission"]'
+              apply_result: true
+              override_config: "{}"
+
+
+    pick_drop_target:
+      maxagents: 2
+      description: "drive to pick up or drop a trailer"
+      settings: >
+            {}
+        
+      recipe:
+          steps:
+            - step: "prepare_mission"
+              service_type: "pick_drop_park"
+              request_order: 1
+              apply_result: false
+              override_config: "{}"
+
+            - step: "drive_the_path"
+              service_type: "drive"
+              request_order: 2
+              dependencies: '["prepare_mission"]'
+              apply_result: true
+              override_config: "{}"
+
+            - step: "connect_or_disconnect_trailer"
+              service_type: "pick_drop_park"
+              request_order: 3
+              apply_result: true
+              dependencies: '["prepare_mission", "drive_the_path"]'
+              override_config: "{}"
+
+          
+
+    transport:
+      maxagents: 2
+      description: "move trailer around and return to the initial position"
+      settings: >
+            {}
+        
+      recipe:
+          steps:
+            - step: "prepare_mission"
+              service_type: "transport"
+              request_order: 1
+              apply_result: false
+              override_config: "{}"
+
+            - step: "drive_to_trailer"
+              service_type: "drive"
+              request_order: 2
+              dependencies: '["prepare_mission"]'
+              apply_result: true
+              override_config: "{}"
+
+            - step: "connect_prep_move"
+              service_type: "transport"
+              request_order: 3
+              apply_result: true
+              dependencies: '["prepare_mission", "drive_to_trailer"]'
+              override_config: "{}"
+
+            - step: "drive_trailer_to_destiny"
+              service_type: "drive"
+              request_order: 4
+              dependencies: '["prepare_mission", "connect_prep_move"]'
+              apply_result: true
+              override_config: "{}"
+
+            - step: "return_trailer"
+              service_type: "transport"
+              request_order: 5
+              apply_result: true
+              wait_assignments: true
+              dependencies: '["prepare_mission", "drive_trailer_to_destiny"]'
+              override_config: "{}"
+
+            - step: "drive_trailer_to_origin"
+              service_type: "drive"
+              request_order: 6
+              dependencies: '["prepare_mission", "return_trailer"]'
+              apply_result: true
+              wait_assignments: true
+              override_config: "{}"
+
+            - step: "disconnect_return_truck"
+              service_type: "transport"
+              request_order: 7
+              apply_result: true
+              dependencies: '["prepare_mission", "drive_trailer_to_origin"]'
+              override_config: "{}"
+
+            - step: "drive_to_origin"
+              service_type: "drive"
+              request_order: 8
+              dependencies: '["prepare_mission", "disconnect_return_truck"]'
+              apply_result: true
+              override_config: "{}"
+
+
+
+    autotruck_custom_buttons:
+      maxagents: 1
+      description: "this mission type is only place-holder for other mission inputs, trigered by a custom button"
+      settings: >
+                {
+                  "autotruck_app": {
+
+                    "MA1": {
+                      "runMission": "map_loading",
+                      "buttonLabel": "Start here",
+                      "requireAgent": false,
+                      "inputMessage": "This will Load the map with the name:",
+                      "inputVariable": "map_name",
+                      "defaultInputValue": "yard_gates",
+                      "defaultRequest": {
+                        "agent_id": "$agentId$"
+                      }
+                    },
+
+                    "MA2": {
+                      "runMission": "transport",
+                      "buttonLabel": "Move Around",
+                      "inputMessage": "Type the trailer uuid",
+                      "inputVariable": "trailer_uuid",
+                      "defaultInputValue": "trailer1",
+                      "requireAgent": true,
+                      "defaultRequest": {
+                        "agent_id": "$agentId$"
+                      }
+                    },
+
+                    "MB1": {
+                      "runMission": "pick_drop_target",
+                      "buttonLabel": "Pick load at the gate",
+                      "backgroundColor": "#4400CC",
+                      "inputMessage": "Type the gate where the trailer is: G10 to G17. (be sure the gates are loaded, press [Start here])",
+                      "inputVariable": "target_name",
+                      "requireAgent": true,
+                      "defaultInputValue": "G15",
+                      "defaultRequest": {
+                          "agent_id": "$agentId$",
+                          "operation": "pick"   
+                      }
+                    },
+
+                    "MB2": {
+                      "runMission": "pick_drop_target",
+                      "buttonLabel": "Pick load by name",
+                      "backgroundColor": "#4472C4",
+                      "inputMessage": "Type the name of the trailer",
+                      "inputVariable": "trailer_uuid",
+                      "defaultInputValue": "trailer1",
+                      "requireAgent": true,
+                      "defaultRequest": {
+                          "agent_id": "$agentId$",
+                          "operation": "pick"   
+                      }
+                    },
+
+                    "MB3": {
+                      "runMission": "pick_drop_target",
+                      "buttonLabel": "Drop to gate",
+                      "backgroundColor": "#AA0204",
+                      "inputMessage": "Type the gate to drop, e.g. G10 - G17",
+                      "inputVariable": "target_name",
+                      "defaultInputValue": "G10",
+                      "requireAgent": true,
+                      "defaultRequest": {
+                          "agent_id": "$agentId$",
+                          "operation": "drop"   
+                      }
+                    },
+
+                    "MB4": {
+                      "runMission": "park_to_target",
+                      "buttonLabel": "Park to",
+                      "backgroundColor": "#4472C4",
+                      "inputMessage": "Type the gate to park, e.g. G20 - G24",
+                      "defaultInputValue": "G20",
+                      "inputVariable": "target_name",
+                      "requireAgent": true,
+                      "defaultRequest": {
+                          "agent_id": "$agentId$",
+                          "operation": "park"   
+                      }
+                    }
+                  }
+
+                }
+      
